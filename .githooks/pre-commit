@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "git nao encontrado."
+  exit 1
+fi
+
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  exit 0
+fi
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [ -z "${staged_files}" ]; then
+  exit 0
+fi
+
+blocked_paths_regex='(^|/)\.env($|\.)|(^|/).+\.pem$|(^|/).+\.key$|(^|/).+\.p12$|(^|/).+\.crt$|(^|/)id_rsa$|(^|/)id_ed25519$'
+secret_content_regex='(BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|github_pat_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|sk-[A-Za-z0-9]+|JWT_SECRET=.+|DATABASE_URL=postgres:\/\/[^[:space:]]+|POSTGRES_PASSWORD=.+|API_KEY=.+|SECRET_KEY=.+)'
+
+blocked_files="$(printf '%s\n' "$staged_files" | grep -E "${blocked_paths_regex}" || true)"
+
+if [ -n "${blocked_files}" ]; then
+  echo "Commit bloqueado: arquivos sensiveis staged."
+  printf '%s\n' "${blocked_files}"
+  echo "Remova esses arquivos do commit antes de continuar."
+  exit 1
+fi
+
+tmp_file="$(mktemp)"
+trap 'rm -f "$tmp_file"' EXIT
+
+printf '%s\n' "$staged_files" | while IFS= read -r file; do
+  [ -n "$file" ] || continue
+  git show ":$file" >>"$tmp_file" 2>/dev/null || true
+  printf '\n' >>"$tmp_file"
+done
+
+if grep -E -n "${secret_content_regex}" "$tmp_file" >/dev/null 2>&1; then
+  echo "Commit bloqueado: padrao sensivel detectado no conteudo staged."
+  echo "Revise variaveis, tokens, chaves privadas e credenciais antes de commitar."
+  exit 1
+fi
+
+exit 0

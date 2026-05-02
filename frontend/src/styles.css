@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #3e2a23;
+  background:
+    radial-gradient(circle at top left, rgba(243, 217, 208, 0.85), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(197, 143, 104, 0.18), transparent 22%),
+    #f5eee8;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: "Trebuchet MS", sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.page-shell {
+  @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+}
+
+.card {
+  @apply rounded-[28px] border border-white/60 bg-white/75 p-6 shadow-soft backdrop-blur;
+}
+
+.section-title {
+  @apply font-display text-3xl text-espresso sm:text-4xl;
+}
+
+.pill {
+  @apply inline-flex items-center rounded-full bg-clay px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-espresso px-5 py-3 text-sm font-semibold text-white transition hover:bg-clay;
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-full border border-espresso/20 bg-white px-5 py-3 text-sm font-semibold text-espresso transition hover:border-clay hover:text-clay;
+}
