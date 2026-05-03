@@ -15,7 +15,7 @@ type Product struct {
 	Price          float64   `json:"price" gorm:"type:numeric(12,2);not null"`
 	CompareAtPrice float64   `json:"compare_at_price" gorm:"type:numeric(12,2)"`
 	Stock          int       `json:"stock" gorm:"default:0"`
-	ImageURL       string    `json:"image_url" gorm:"size:255"`
+	ImageURL       string    `json:"image_url" gorm:"type:text"`
 	IsActive       bool      `json:"is_active" gorm:"default:true"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`

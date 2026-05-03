@@ -15,6 +15,7 @@ func registerPublicProductRoutes(router gin.IRouter, productHandler *handlers.Pr
 func registerProtectedProductRoutes(protected *gin.RouterGroup, productHandler *handlers.ProductHandler) {
 	admin := protected.Group("/")
 	admin.Use(middlewares.AdminMiddleware())
+	admin.GET("/admin/products", productHandler.ListAll)
 	admin.POST("/products", productHandler.Create)
 	admin.PUT("/products/:id", productHandler.Update)
 	admin.DELETE("/products/:id", productHandler.Delete)

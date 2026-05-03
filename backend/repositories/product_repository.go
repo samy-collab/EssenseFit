@@ -38,6 +38,15 @@ func (r *ProductRepository) List(season string) ([]models.Product, error) {
 	return products, nil
 }
 
+func (r *ProductRepository) ListAll() ([]models.Product, error) {
+	var products []models.Product
+	if err := r.db.Order("created_at desc").Find(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (r *ProductRepository) GetByID(id uint) (*models.Product, error) {
 	var product models.Product
 	if err := r.db.First(&product, id).Error; err != nil {

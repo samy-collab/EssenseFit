@@ -7,6 +7,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +16,7 @@ export function LoginPage() {
     try {
       setLoading(true);
       setError("");
-      await login(email, password);
+      await login(email.trim(), password);
       navigate("/produtos");
     } catch (err) {
       setError("Nao foi possivel entrar. Verifique e-mail e senha.");
@@ -31,7 +32,22 @@ export function LoginPage() {
       <p className="mt-3 text-espresso/70">Acesse sua area de compras, check-ins, pontos e cupons.</p>
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <input className="w-full rounded-2xl border border-espresso/15 bg-white px-4 py-3" placeholder="E-mail" value={email} onChange={(event) => setEmail(event.target.value)} />
-        <input className="w-full rounded-2xl border border-espresso/15 bg-white px-4 py-3" type="password" placeholder="Senha" value={password} onChange={(event) => setPassword(event.target.value)} />
+        <div className="relative">
+          <input
+            className="w-full rounded-2xl border border-espresso/15 bg-white px-4 py-3 pr-24"
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <button
+            className="absolute inset-y-1 right-1 rounded-2xl px-4 text-sm font-semibold text-clay transition hover:bg-sand"
+            type="button"
+            onClick={() => setShowPassword((current) => !current)}
+          >
+            {showPassword ? "Ocultar" : "Mostrar"}
+          </button>
+        </div>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <button className="button-primary w-full" type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}

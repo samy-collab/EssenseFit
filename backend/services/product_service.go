@@ -64,6 +64,10 @@ func (s *ProductService) List(season string) ([]models.Product, error) {
 	return s.productRepo.List(season)
 }
 
+func (s *ProductService) ListAll() ([]models.Product, error) {
+	return s.productRepo.ListAll()
+}
+
 func (s *ProductService) GetByID(id uint) (*models.Product, error) {
 	return s.productRepo.GetByID(id)
 }

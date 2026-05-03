@@ -17,9 +17,16 @@ export function MainLayout() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-white/50 bg-sand/90 backdrop-blur">
         <div className="page-shell flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="pill">Essence Fit</p>
-            <h1 className="font-display text-3xl text-espresso">Sua Essencia em Movimento</h1>
+          <div className="flex items-center gap-4">
+            <img
+              src="/brand/logos/LOGOESSENSEFIT.png"
+              alt="Essence Fit"
+              className="h-16 w-28 object-contain"
+            />
+            <div>
+              <p className="pill">Essence Fit</p>
+              <h1 className="font-display text-3xl text-espresso">Sua Essencia em Movimento</h1>
+            </div>
           </div>
           <nav className="flex flex-wrap gap-2">
             {navItems.map((item) => (

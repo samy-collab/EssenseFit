@@ -44,6 +44,8 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      - ./uploads:/app/uploads
 
   frontend:
     image: node:20-alpine

@@ -44,6 +44,16 @@ func (h *ProductHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, products)
 }
 
+func (h *ProductHandler) ListAll(c *gin.Context) {
+	products, err := h.productService.ListAll()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, products)
+}
+
 func (h *ProductHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

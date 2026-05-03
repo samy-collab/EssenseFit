@@ -45,6 +45,7 @@ func main() {
 	checkInHandler := handlers.NewCheckInHandler(checkInService)
 	couponHandler := handlers.NewCouponHandler(couponService)
 	pointHandler := handlers.NewPointHandler(pointService)
+	uploadHandler := handlers.NewUploadHandler("uploads")
 
 	router := routes.SetupRouter(
 		cfg,
@@ -54,6 +55,7 @@ func main() {
 		checkInHandler,
 		couponHandler,
 		pointHandler,
+		uploadHandler,
 	)
 
 	if err := router.Run(":" + cfg.ServerPort); err != nil {

@@ -27,9 +27,13 @@ export function HomePage() {
         <div className="card overflow-hidden bg-[linear-gradient(135deg,#fff8f4_0%,#f3d9d0_55%,#c58f68_150%)]">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-6">
-              <p className="pill">Essence Fit</p>
+              <img
+                src="/brand/logos/LOGOESSENSEFIT.png"
+                alt="Essence Fit"
+                className="h-28 w-52 object-contain"
+              />
               <h2 className="font-display text-5xl leading-tight text-espresso sm:text-6xl">
-                Moda fitness feminina com recompensa por constancia.
+                Vista sua melhor versao.
               </h2>
               <p className="max-w-xl text-lg leading-8 text-espresso/75">
                 Treine, registre, evolua e ganhe beneficios. A loja une estilo,
@@ -46,7 +50,7 @@ export function HomePage() {
             </div>
             <div className="rounded-[28px] bg-white/55 p-4 shadow-soft">
               <img
-                src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80"
+                src="/brand/pdf-assets/asset-039.png"
                 alt="Essence Fit"
                 className="h-full min-h-[320px] w-full rounded-[24px] object-cover"
               />
@@ -80,6 +84,11 @@ export function HomePage() {
           eyebrow="Colecoes do ano"
           title="Produtos por estacao"
           description="A navegacao por estacao organiza a experiencia de compra e ajuda a combinar clima, treino e estilo."
+        />
+        <img
+          src="/brand/pdf-assets/asset-028.png"
+          alt="Colecoes do ano Essence Fit"
+          className="mb-6 h-auto w-full rounded-[24px] object-cover"
         />
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {seasonLinks.map((season) => (
