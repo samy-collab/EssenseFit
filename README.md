@@ -231,6 +231,11 @@ As rotas existem tanto em formato direto quanto sob `/api` em vários casos. Aba
 - `PATCH /orders/:id/status`
 - `GET /checkins`
 
+### Acesso administrativo de desenvolvimento
+
+- E-mail: `admin@essencefit.com.br`
+- Senha: `admin123`
+
 ## Regras de negócio
 
 ### Perfis

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Essence Fit - Resumo do Projeto</title>
+  <style>
+    @page {
+      margin: 18mm 16mm;
+    }
+
+    body {
+      color: #1f2933;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.48;
+    }
+
+    h1 {
+      color: #1f3a5f;
+      font-size: 28pt;
+      margin: 0 0 4mm;
+    }
+
+    h2 {
+      border-bottom: 1px solid #d8dee8;
+      color: #1f3a5f;
+      font-size: 16pt;
+      margin: 9mm 0 3mm;
+      padding-bottom: 1.5mm;
+    }
+
+    h3 {
+      color: #31445f;
+      font-size: 12.5pt;
+      margin: 5mm 0 1.5mm;
+    }
+
+    p {
+      margin: 0 0 3mm;
+    }
+
+    ul {
+      margin: 1mm 0 3mm 6mm;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 1.2mm;
+    }
+
+    code {
+      background: #eef2f7;
+      border-radius: 3px;
+      color: #233044;
+      font-family: "DejaVu Sans Mono", Consolas, monospace;
+      font-size: 10pt;
+      padding: 1px 4px;
+    }
+
+    .cover {
+      border-bottom: 3px solid #1f3a5f;
+      margin-bottom: 8mm;
+      padding-bottom: 6mm;
+    }
+
+    .subtitle {
+      color: #526173;
+      font-size: 13pt;
+      margin-top: 0;
+    }
+
+    .meta {
+      color: #64748b;
+      font-size: 10.5pt;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+    }
+
+    .box {
+      background: #f8fafc;
+      border: 1px solid #d8dee8;
+      border-radius: 6px;
+      padding: 4mm;
+    }
+
+    .box h3 {
+      margin-top: 0;
+    }
+
+    .tree {
+      background: #f8fafc;
+      border: 1px solid #d8dee8;
+      border-radius: 6px;
+      color: #263245;
+      font-family: "DejaVu Sans Mono", Consolas, monospace;
+      font-size: 9.8pt;
+      line-height: 1.35;
+      padding: 4mm;
+      white-space: pre-wrap;
+    }
+
+    .small {
+      color: #526173;
+      font-size: 10pt;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <h1>Essence Fit</h1>
+    <p class="subtitle">Resumo tecnico e funcional do projeto</p>
+    <p class="meta">Projeto localizado em: <code>/home/acer/Area de trabalho/EssenseFit</code></p>
+    <p class="meta">Documento gerado em 29/05/2026.</p>
+  </section>
+
+  <h2>1. Visao geral</h2>
+  <p>
+    O <strong>Essence Fit</strong> e um sistema full-stack para uma loja virtual de moda fitness feminina.
+    A proposta combina e-commerce, acompanhamento de atividades fisicas, sistema de pontos e recompensas
+    por cupons de desconto.
+  </p>
+  <p>
+    A aplicacao atende dois perfis principais: <strong>clientes</strong>, que compram produtos, fazem check-ins
+    e resgatam cupons; e <strong>administradores</strong>, que gerenciam produtos, pedidos, cupons e dados gerais.
+  </p>
+
+  <div class="grid">
+    <div class="box">
+      <h3>Recursos principais</h3>
+      <ul>
+        <li>Autenticacao com JWT.</li>
+        <li>Catalogo de produtos por estacao.</li>
+        <li>Carrinho e criacao de pedidos.</li>
+        <li>Check-in Fitness liberado apos primeira compra.</li>
+        <li>Pontuacao por atividades fisicas.</li>
+        <li>Resgate de cupons com pontos.</li>
+        <li>Perfil de usuario com foto e integracao Strava.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Perfis de acesso</h3>
+      <ul>
+        <li><strong>ADMIN:</strong> gerencia produtos, pedidos, cupons e check-ins.</li>
+        <li><strong>CUSTOMER:</strong> compra produtos, acompanha pedidos, faz check-ins e resgata cupons.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. Tecnologias usadas</h2>
+  <div class="grid">
+    <div class="box">
+      <h3>Backend</h3>
+      <ul>
+        <li><strong>Go</strong> como linguagem principal.</li>
+        <li><strong>Gin</strong> para API HTTP.</li>
+        <li><strong>GORM</strong> para acesso ao banco.</li>
+        <li><strong>PostgreSQL</strong> como banco relacional.</li>
+        <li><strong>JWT</strong> para autenticacao.</li>
+        <li><strong>bcrypt</strong> para hash de senhas.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Frontend e infraestrutura</h3>
+      <ul>
+        <li><strong>React 18</strong> com <strong>TypeScript</strong>.</li>
+        <li><strong>Vite</strong> para desenvolvimento e build.</li>
+        <li><strong>Tailwind CSS</strong> para estilos.</li>
+        <li><strong>Axios</strong> para consumo da API.</li>
+        <li><strong>React Router</strong> para navegacao.</li>
+        <li><strong>Docker Compose</strong> para frontend, backend e banco.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>3. Arquitetura geral</h2>
+  <p>
+    O projeto e dividido em tres partes principais: frontend React, backend Go e banco PostgreSQL.
+    O frontend conversa com a API usando chamadas HTTP. O backend aplica regras de negocio, autentica usuarios,
+    manipula arquivos de upload e persiste dados no banco.
+  </p>
+  <ul>
+    <li><strong>Frontend:</strong> telas, contexto de autenticacao, carrinho, chamadas para a API e experiencia da usuaria.</li>
+    <li><strong>Backend:</strong> rotas, handlers HTTP, servicos de negocio, repositorios e modelos.</li>
+    <li><strong>Banco:</strong> tabelas criadas por migrations SQL versionadas em <code>backend/config/migrations</code>.</li>
+    <li><strong>Docker:</strong> orquestra PostgreSQL, API e frontend para ambiente local.</li>
+  </ul>
+
+  <h2>4. Estrutura de pastas</h2>
+  <div class="tree">EssenseFit/
+|-- backend/
+|   |-- config/
+|   |   |-- migrations/
+|   |   |-- config.go
+|   |   |-- database.go
+|   |   `-- migrator.go
+|   |-- controllers/
+|   |   `-- handlers/
+|   |-- middlewares/
+|   |-- models/
+|   |-- repositories/
+|   |-- routes/
+|   |-- services/
+|   |-- Dockerfile
+|   |-- go.mod
+|   |-- go.sum
+|   `-- main.go
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- context/
+|   |   |-- data/
+|   |   |-- lib/
+|   |   |-- pages/
+|   |   |-- services/
+|   |   |-- utils/
+|   |   |-- App.tsx
+|   |   |-- main.tsx
+|   |   |-- styles.css
+|   |   `-- types.ts
+|   |-- index.html
+|   |-- package.json
+|   |-- tailwind.config.js
+|   |-- tsconfig.json
+|   `-- vite.config.ts
+|-- scripts/
+|-- uploads/
+|-- .env.example
+|-- docker-compose.yml
+`-- README.md</div>
+
+  <h2>5. Principais pastas do backend</h2>
+  <ul>
+    <li><code>backend/config</code>: configuracao da aplicacao, conexao com PostgreSQL e executor de migrations.</li>
+    <li><code>backend/config/migrations</code>: scripts SQL que criam e evoluem tabelas como usuarios, produtos, pedidos, check-ins, pontos, cupons, Strava e imagens de perfil.</li>
+    <li><code>backend/controllers/handlers</code>: camada HTTP. Recebe requisicoes, valida dados basicos e chama os servicos.</li>
+    <li><code>backend/middlewares</code>: regras intermediarias, principalmente autenticacao via JWT.</li>
+    <li><code>backend/models</code>: structs Go que representam entidades do sistema, como User, Product, Order, Coupon, CheckIn e PointTransaction.</li>
+    <li><code>backend/repositories</code>: acesso ao banco de dados usando GORM.</li>
+    <li><code>backend/routes</code>: registro das rotas publicas, protegidas e administrativas.</li>
+    <li><code>backend/services</code>: regras de negocio, como compra, pontuacao, cupons, autenticacao e check-ins.</li>
+  </ul>
+
+  <h2>6. Principais pastas do frontend</h2>
+  <ul>
+    <li><code>frontend/src/pages</code>: paginas da aplicacao, incluindo Home, Login, Cadastro, Produtos, Detalhe de Produto, Carrinho, Perfil, Pedidos, Check-in, Pontos, Cupons, Admin e callback do Strava.</li>
+    <li><code>frontend/src/components</code>: componentes reutilizaveis, como layout principal, cards de produto, rotas protegidas e introducoes de secao.</li>
+    <li><code>frontend/src/context</code>: estados globais de autenticacao, carrinho e tema.</li>
+    <li><code>frontend/src/services</code>: funcoes que consomem a API, separadas por dominio: autenticacao, produtos, pedidos, check-ins, pontos e cupons.</li>
+    <li><code>frontend/src/lib</code>: configuracao base do cliente HTTP.</li>
+    <li><code>frontend/src/utils</code>: utilitarios e mapeamentos usados pela interface.</li>
+    <li><code>frontend/src/types.ts</code>: tipos TypeScript compartilhados entre paginas, componentes e services.</li>
+  </ul>
+
+  <h2>7. Fluxos funcionais importantes</h2>
+  <h3>Cadastro e login</h3>
+  <p>
+    A usuaria cria conta ou entra com e-mail e senha. O backend retorna um token JWT, que o frontend usa
+    para acessar rotas protegidas como carrinho, perfil, pedidos, check-in, pontos e cupons.
+  </p>
+
+  <h3>Compra e liberacao do Check-in Fitness</h3>
+  <p>
+    Clientes autenticadas criam pedidos a partir dos produtos do carrinho. Quando um pedido e confirmado como pago,
+    o sistema marca a primeira compra da usuaria e libera a area de Check-in Fitness.
+  </p>
+
+  <h3>Check-ins, pontos e cupons</h3>
+  <p>
+    Cada check-in valido gera pontos. A regra atual limita a um check-in por dia por usuaria. Os pontos podem ser
+    trocados por cupons, que ficam associados a cliente com status de uso.
+  </p>
+
+  <h3>Perfil e Strava</h3>
+  <p>
+    O codigo atual inclui campos e rotas para foto de perfil e integracao com Strava. Existem endpoints para iniciar
+    login Strava, receber callback e atualizar foto de perfil da usuaria autenticada.
+  </p>
+
+  <h2>8. Rotas principais da API</h2>
+  <ul>
+    <li><strong>Autenticacao:</strong> <code>POST /auth/register</code>, <code>POST /auth/login</code>, <code>GET /auth/me</code>, <code>PATCH /auth/me/photo</code>, <code>GET /auth/strava/login</code>, <code>GET /auth/strava/callback</code>.</li>
+    <li><strong>Produtos:</strong> <code>GET /products</code>, <code>GET /products/:id</code>, <code>POST /products</code>, <code>PUT /products/:id</code>, <code>DELETE /products/:id</code>.</li>
+    <li><strong>Pedidos:</strong> <code>POST /orders</code>, <code>GET /orders/my</code>, <code>GET /orders/:id</code>, <code>GET /orders</code>, <code>PATCH /orders/:id/status</code>.</li>
+    <li><strong>Check-ins:</strong> <code>POST /checkins</code>, <code>GET /checkins/my</code>, <code>GET /checkins</code>.</li>
+    <li><strong>Pontos:</strong> <code>GET /points/my</code>.</li>
+    <li><strong>Cupons:</strong> <code>POST /coupons</code>, <code>GET /coupons</code>, <code>POST /coupons/redeem</code>, <code>GET /coupons/my</code>.</li>
+  </ul>
+
+  <h2>9. Como executar</h2>
+  <h3>Com Docker Compose</h3>
+  <ul>
+    <li>Copiar variaveis: <code>cp .env.example .env</code>.</li>
+    <li>Subir ambiente: <code>docker compose up --build</code>.</li>
+    <li>Frontend: <code>http://localhost:3000</code>.</li>
+    <li>Backend: <code>http://localhost:8080</code>.</li>
+    <li>PostgreSQL: <code>localhost:5432</code>.</li>
+  </ul>
+
+  <h3>Separado</h3>
+  <ul>
+    <li>Frontend: entrar em <code>frontend</code>, instalar dependencias com <code>npm install</code> e rodar <code>npm run dev</code>.</li>
+    <li>Backend: entrar em <code>backend</code>, preparar <code>.env</code>, garantir PostgreSQL ativo e rodar <code>go run .</code>.</li>
+  </ul>
+
+  <h2>10. Observacoes e proximos passos</h2>
+  <ul>
+    <li>O frontend ja consome a API principal e possui rotas protegidas para areas autenticadas.</li>
+    <li>Algumas telas administrativas podem precisar de expansao operacional para cobrir todos os fluxos de cadastro e edicao.</li>
+    <li>As migrations sao parte importante do projeto e documentam a evolucao do banco.</li>
+    <li>Proximos passos recomendados: ampliar painel admin, aplicar cupom diretamente no pedido, fortalecer seeds e adicionar testes automatizados.</li>
+  </ul>
+
+  <p class="small">
+    Este documento foi montado a partir dos arquivos atuais do projeto: README, manifestos, Docker Compose, rotas,
+    modelos e estrutura de diretorios.
+  </p>
+</body>
+</html>

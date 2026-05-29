@@ -10,6 +10,11 @@ export type User = {
   points: number;
   has_first_purchase: boolean;
   check_in_unlocked: boolean;
+  confirmed_orders?: number;
+  profile_image_url?: string;
+  strava_profile_image_url?: string;
+  strava_athlete_id?: number;
+  created_at?: string;
 };
 
 export type AuthResponse = {

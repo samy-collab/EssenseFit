@@ -33,6 +33,7 @@ func main() {
 	pointTransactionRepo := repositories.NewPointTransactionRepository(db)
 
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
+	authService.ConfigureStrava(cfg.StravaClientID, cfg.StravaClientSecret, cfg.StravaRedirectURL)
 	productService := services.NewProductService(productRepo)
 	orderService := services.NewOrderService(db, orderRepo, productRepo, userRepo)
 	checkInService := services.NewCheckInService(db, checkInRepo, userRepo, pointTransactionRepo)
@@ -40,6 +41,8 @@ func main() {
 	pointService := services.NewPointService(userRepo, checkInRepo, couponRepo, pointTransactionRepo)
 
 	authHandler := handlers.NewAuthHandler(authService)
+	authHandler.SetFrontendURL(cfg.FrontendURL)
+	authHandler.SetUploadDir("uploads")
 	productHandler := handlers.NewProductHandler(productService)
 	orderHandler := handlers.NewOrderHandler(orderService)
 	checkInHandler := handlers.NewCheckInHandler(checkInService)

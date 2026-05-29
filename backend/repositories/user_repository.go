@@ -36,6 +36,15 @@ func (r *UserRepository) GetByID(id uint) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepository) GetByStravaAthleteID(athleteID int64) (*models.User, error) {
+	var user models.User
+	if err := r.db.Where("strava_athlete_id = ?", athleteID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) Update(user *models.User) error {
 	return r.db.Save(user).Error
 }

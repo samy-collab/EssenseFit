@@ -7,7 +7,7 @@ import {
   type ReactNode
 } from "react";
 import { clearStoredToken, getStoredToken, setStoredToken } from "../lib/api";
-import { loginRequest, meRequest, registerRequest } from "../services/authService";
+import { loginRequest, meRequest, registerRequest, updateProfilePhotoRequest } from "../services/authService";
 import type { User } from "../types";
 
 type AuthContextValue = {
@@ -15,9 +15,11 @@ type AuthContextValue = {
   loading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
+  updateProfilePhoto: (file: File) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -48,6 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(response.user);
   }
 
+  async function loginWithToken(token: string) {
+    setStoredToken(token);
+    const profile = await meRequest();
+    setUser(profile);
+  }
+
   async function register(name: string, email: string, password: string) {
     const response = await registerRequest(name, email, password);
     setStoredToken(response.token);
@@ -64,15 +72,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(profile);
   }
 
+  async function updateProfilePhoto(file: File) {
+    const profile = await updateProfilePhotoRequest(file);
+    setUser(profile);
+  }
+
   const value = useMemo(
     () => ({
       user,
       loading,
       isAuthenticated: Boolean(user),
       login,
+      loginWithToken,
       register,
       logout,
-      refreshProfile
+      refreshProfile,
+      updateProfilePhoto
     }),
     [user, loading]
   );

@@ -10,9 +10,11 @@ import { LoginPage } from "./pages/LoginPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { PointsPage } from "./pages/PointsPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SeasonProductsPage } from "./pages/SeasonProductsPage";
+import { StravaCallbackPage } from "./pages/StravaCallbackPage";
 
 export default function App() {
   return (
@@ -20,12 +22,14 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/strava/callback" element={<StravaCallbackPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
         <Route path="/produtos" element={<ProductsPage />} />
         <Route path="/produtos/estacao/:season" element={<SeasonProductsPage />} />
         <Route path="/produtos/:id" element={<ProductDetailPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/carrinho" element={<CartPage />} />
+          <Route path="/meu-perfil" element={<ProfilePage />} />
           <Route path="/meus-pedidos" element={<OrdersPage />} />
           <Route path="/check-in-fitness" element={<CheckInPage />} />
           <Route path="/meus-pontos" element={<PointsPage />} />
