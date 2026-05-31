@@ -27,8 +27,8 @@ export default function App() {
         <Route path="/produtos" element={<ProductsPage />} />
         <Route path="/produtos/estacao/:season" element={<SeasonProductsPage />} />
         <Route path="/produtos/:id" element={<ProductDetailPage />} />
+        <Route path="/carrinho" element={<CartPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/carrinho" element={<CartPage />} />
           <Route path="/meu-perfil" element={<ProfilePage />} />
           <Route path="/meus-pedidos" element={<OrdersPage />} />
           <Route path="/check-in-fitness" element={<CheckInPage />} />

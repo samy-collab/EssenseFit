@@ -10,6 +10,7 @@ type User struct {
 	Phone                 string    `json:"phone" gorm:"size:30"`
 	Role                  string    `json:"role" gorm:"size:30;default:CUSTOMER"`
 	Points                int       `json:"points" gorm:"default:0"`
+	AccountCredit         float64   `json:"account_credit" gorm:"column:account_credit;type:numeric(10,2);default:0"`
 	HasFirstPurchase      bool      `json:"has_first_purchase" gorm:"default:false"`
 	CheckInUnlocked       bool      `json:"check_in_unlocked" gorm:"default:false"`
 	ConfirmedOrders       int       `json:"confirmed_orders" gorm:"default:0"`

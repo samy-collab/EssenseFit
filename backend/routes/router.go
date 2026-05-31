@@ -16,6 +16,7 @@ func SetupRouter(
 	checkInHandler *handlers.CheckInHandler,
 	couponHandler *handlers.CouponHandler,
 	pointHandler *handlers.PointHandler,
+	accountCreditHandler *handlers.AccountCreditHandler,
 	uploadHandler *handlers.UploadHandler,
 ) *gin.Engine {
 	router := gin.Default()
@@ -43,6 +44,7 @@ func SetupRouter(
 	registerAdminCheckInRoutes(protected, checkInHandler)
 	registerProtectedCouponRoutes(protected, couponHandler)
 	registerPointRoutes(protected, pointHandler)
+	registerAccountCreditRoutes(protected, accountCreditHandler)
 
 	protectedRoot := router.Group("/")
 	protectedRoot.Use(middlewares.AuthMiddleware(cfg.JWTSecret))
@@ -50,6 +52,7 @@ func SetupRouter(
 	registerOrderRoutes(protectedRoot, orderHandler)
 	registerCheckInRoutes(protectedRoot, checkInHandler)
 	registerPointRoutes(protectedRoot, pointHandler)
+	registerAccountCreditRoutes(protectedRoot, accountCreditHandler)
 	registerProtectedCouponRoutes(protectedRoot, couponHandler)
 	registerProtectedProductRoutes(protectedRoot, productHandler)
 	registerProtectedOrderAdminRoutes(protectedRoot, orderHandler)

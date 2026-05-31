@@ -8,6 +8,7 @@ export type User = {
   email: string;
   role: Role;
   points: number;
+  account_credit: number;
   has_first_purchase: boolean;
   check_in_unlocked: boolean;
   confirmed_orders?: number;
@@ -24,6 +25,7 @@ export type AuthResponse = {
 
 export type Product = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   price: number;
@@ -37,6 +39,7 @@ export type Product = {
 
 export type ProductApi = {
   id: number;
+  slug: string;
   name: string;
   description: string;
   price: number;

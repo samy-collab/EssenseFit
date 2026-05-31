@@ -39,6 +39,7 @@ func main() {
 	checkInService := services.NewCheckInService(db, checkInRepo, userRepo, pointTransactionRepo)
 	couponService := services.NewCouponService(db, couponRepo, userRepo, pointTransactionRepo)
 	pointService := services.NewPointService(userRepo, checkInRepo, couponRepo, pointTransactionRepo)
+	accountCreditService := services.NewAccountCreditService(db, userRepo)
 
 	authHandler := handlers.NewAuthHandler(authService)
 	authHandler.SetFrontendURL(cfg.FrontendURL)
@@ -48,6 +49,7 @@ func main() {
 	checkInHandler := handlers.NewCheckInHandler(checkInService)
 	couponHandler := handlers.NewCouponHandler(couponService)
 	pointHandler := handlers.NewPointHandler(pointService)
+	accountCreditHandler := handlers.NewAccountCreditHandler(accountCreditService)
 	uploadHandler := handlers.NewUploadHandler("uploads")
 
 	router := routes.SetupRouter(
@@ -58,6 +60,7 @@ func main() {
 		checkInHandler,
 		couponHandler,
 		pointHandler,
+		accountCreditHandler,
 		uploadHandler,
 	)
 

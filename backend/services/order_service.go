@@ -51,6 +51,13 @@ func NewOrderService(
 func (s *OrderService) Create(userID uint, input CreateOrderInput) (*models.Order, error) {
 	var order *models.Order
 	err := s.db.Transaction(func(tx *gorm.DB) error {
+		var user models.User
+		if input.PaymentMethod == "account_credit" {
+			if err := tx.Set("gorm:query_option", "FOR UPDATE").First(&user, userID).Error; err != nil {
+				return err
+			}
+		}
+
 		order = &models.Order{
 			UserID:          userID,
 			OrderNumber:     generateOrderNumber(),
@@ -95,6 +102,26 @@ func (s *OrderService) Create(userID uint, input CreateOrderInput) (*models.Orde
 		order.SubtotalAmount = subtotal
 		order.TotalAmount = subtotal
 		order.Items = items
+
+		if input.PaymentMethod == "account_credit" {
+			if user.AccountCredit < order.TotalAmount {
+				return errors.New("insufficient account credit")
+			}
+			user.AccountCredit -= order.TotalAmount
+			if err := tx.Save(&user).Error; err != nil {
+				return err
+			}
+			transaction := models.AccountCreditTransaction{
+				UserID:        userID,
+				Type:          "debit",
+				Amount:        order.TotalAmount,
+				PaymentMethod: "account_credit",
+				Description:   "Pagamento de pedido com credito na conta",
+			}
+			if err := tx.Create(&transaction).Error; err != nil {
+				return err
+			}
+		}
 
 		return tx.Create(order).Error
 	})

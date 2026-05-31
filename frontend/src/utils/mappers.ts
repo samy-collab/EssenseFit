@@ -10,6 +10,7 @@ export function normalizeSeason(season: string): Product["season"] {
 export function mapProduct(product: ProductApi): Product {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     description: product.description,
     price: product.price,
