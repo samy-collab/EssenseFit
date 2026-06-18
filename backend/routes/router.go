@@ -62,9 +62,7 @@ func SetupRouter(
 }
 
 func registerProtectedUploadRoutes(protected *gin.RouterGroup, uploadHandler *handlers.UploadHandler) {
-	admin := protected.Group("/")
-	admin.Use(middlewares.AdminMiddleware())
-	admin.POST("/uploads", uploadHandler.UploadImage)
+	protected.POST("/uploads", uploadHandler.UploadImage)
 }
 
 func corsMiddleware(cfg config.Config) gin.HandlerFunc {

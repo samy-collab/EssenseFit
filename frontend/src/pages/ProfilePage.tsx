@@ -1,11 +1,12 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { fetchActiveCoupons } from "../services/couponService";
 import { fetchMyOrders } from "../services/orderService";
-import type { Order } from "../types";
+import type { Coupon, Order } from "../types";
 
 function formatDate(value?: string) {
-  if (!value) return "Nao informado";
+  if (!value) return "Não informado";
   return new Date(value).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
@@ -16,14 +17,18 @@ function formatCurrency(value: number) {
 export function ProfilePage() {
   const { user, updateProfilePhoto } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     fetchMyOrders().then(setOrders).catch(() => setOrders([]));
+    fetchActiveCoupons().then(setCoupons).catch(() => setCoupons([]));
   }, []);
 
   const profileImage = user?.profile_image_url || user?.strava_profile_image_url;
+  const isAdmin = user?.role === "ADMIN";
+  const accountCreditLabel = isAdmin ? "Ilimitado" : formatCurrency(user?.account_credit ?? 0);
   const initials = useMemo(() => {
     const name = user?.name?.trim() || user?.email || "EF";
     return name
@@ -33,6 +38,19 @@ export function ProfilePage() {
       .map((part) => part[0]?.toUpperCase())
       .join("");
   }, [user]);
+
+  const currentPoints = user?.points ?? 0;
+  const pointCoupons = coupons
+    .filter((coupon) => coupon.points_required > 0)
+    .sort((a, b) => a.points_required - b.points_required);
+  const nextCoupon = pointCoupons.find((coupon) => coupon.points_required > currentPoints);
+  const availableCoupon = pointCoupons.find((coupon) => coupon.points_required <= currentPoints);
+  const pointsToNextCoupon = nextCoupon ? nextCoupon.points_required - currentPoints : 0;
+  const couponProgressLabel = nextCoupon
+    ? `${pointsToNextCoupon} pontos para ${nextCoupon.title}`
+    : availableCoupon
+      ? `Cupom disponível: ${availableCoupon.title}`
+      : "Sem cupons por pontos ativos";
 
   const totalSpent = orders.reduce((sum, order) => sum + order.total_amount, 0);
   const completedOrders = orders.filter((order) => ["confirmed", "paid", "delivered", "completed"].includes(order.status.toLowerCase())).length;
@@ -47,7 +65,7 @@ export function ProfilePage() {
     try {
       await updateProfilePhoto(file);
     } catch {
-      setError("Nao foi possivel atualizar a foto. Use JPG, PNG, WEBP ou GIF com ate 5MB.");
+      setError("Não foi possível atualizar a foto. Use JPG, PNG, WEBP ou GIF com até 5MB.");
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -82,7 +100,7 @@ export function ProfilePage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#f0c7b2]">Meu perfil</p>
             <h2 className="mt-4 font-display text-5xl leading-tight sm:text-6xl">{user?.name}</h2>
             <p className="mt-3 text-lg text-white/68">{user?.email}</p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div className="border-l-2 border-[#f0c7b2] bg-white/8 p-4">
                 <p className="font-display text-3xl">{formatDate(user?.created_at)}</p>
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-white/55">Conta criada</p>
@@ -92,8 +110,12 @@ export function ProfilePage() {
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-white/55">Compras feitas</p>
               </div>
               <div className="border-l-2 border-[#f0c7b2] bg-white/8 p-4">
-                <p className="font-display text-3xl">{user?.points ?? 0}</p>
+                <p className="font-display text-3xl">{currentPoints}</p>
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-white/55">Pontos atuais</p>
+              </div>
+              <div className="border-l-2 border-[#f0c7b2] bg-white/8 p-4">
+                <p className="font-display text-3xl">{accountCreditLabel}</p>
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-white/55">Créditos</p>
               </div>
             </div>
           </div>
@@ -109,6 +131,15 @@ export function ProfilePage() {
               <p className="mt-2 font-display text-4xl text-theme-primary">{formatCurrency(totalSpent)}</p>
             </div>
             <div className="border-t border-theme pt-5">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-theme-muted">Créditos disponíveis</p>
+              <p className="mt-2 text-lg font-bold text-theme-primary">{accountCreditLabel}</p>
+            </div>
+            <div className="border-t border-theme pt-5">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-theme-muted">Próximo cupom</p>
+              <p className="mt-2 text-lg font-bold text-theme-primary">{couponProgressLabel}</p>
+              {nextCoupon ? <p className="mt-1 text-sm text-theme-secondary">Você tem {currentPoints} de {nextCoupon.points_required} pontos.</p> : null}
+            </div>
+            <div className="border-t border-theme pt-5">
               <p className="text-sm font-bold uppercase tracking-[0.16em] text-theme-muted">Origem da conta</p>
               <p className="mt-2 text-lg font-bold text-theme-primary">{user?.strava_athlete_id ? "Strava conectado" : "Email e senha"}</p>
             </div>
@@ -122,7 +153,7 @@ export function ProfilePage() {
         <section className="card">
           <div className="flex flex-col gap-4 border-b border-theme pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="pill">Historico</p>
+              <p className="pill">Histórico</p>
               <h3 className="section-title mt-4">Minhas compras</h3>
             </div>
             <Link to="/produtos" className="button-secondary">Comprar novamente</Link>
@@ -131,7 +162,7 @@ export function ProfilePage() {
           <div className="mt-6 space-y-4">
             {orders.length === 0 ? (
               <div className="rounded-lg border border-dashed border-theme p-6 text-theme-secondary">
-                Voce ainda nao tem compras registradas.
+                Você ainda não tem compras registradas.
               </div>
             ) : null}
 

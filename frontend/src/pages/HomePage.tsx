@@ -14,7 +14,7 @@ const webImages = {
 };
 
 const seasonLinks = [
-  { label: "Inverno", slug: "inverno", image: webImages.studio, tone: "Camadas firmes para treino, rua e dias frios." },
+  { label: "Inverno", slug: "inverno", image: webImages.studio, tone: "Camadas firmês para treino, rua e dias frios." },
   { label: "Outono", slug: "outono", image: webImages.duo, tone: "Tons sobrios, textura e rotina sem esforco." },
   { label: "Verao", slug: "verao", image: webImages.outdoor, tone: "Leveza, cor e frescor para movimento ao ar livre." },
   { label: "Primavera", slug: "primavera", image: webImages.motion, tone: "Energia visual para danca, pilates e caminhada." }
@@ -50,7 +50,7 @@ export function HomePage() {
               Uma vitrine menos dura para roupas que vivem fora da foto: treino, rua, rotina e recompensa no mesmo fluxo.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/produtos" className="button-primary bg-theme-card text-theme-primary hover:bg-[#f2d0c8]">Ver colecao</Link>
+              <Link to="/produtos" className="button-primary bg-theme-card text-theme-primary hover:bg-[#f2d0c8]">Ver coleção</Link>
               <Link to="/check-in-fitness" className="inline-flex items-center justify-center rounded-md border border-white/35 px-5 py-3 text-sm font-bold text-white transition hover:bg-theme-card hover:text-theme-primary">Check-in</Link>
             </div>
           </div>
@@ -58,7 +58,7 @@ export function HomePage() {
           <div className="hidden self-end pb-8 lg:block">
             <div className="ml-auto max-w-md border-l border-white/28 pl-6">
               <p className="text-sm leading-7 text-white/76">
-                Looks reais, recortes grandes e menos caixas. A Home funciona como editorial da marca antes de virar catalogo.
+                Looks reais, recortes grandes e menos caixas. A Home funciona como editorial da marca antes de virar catálogo.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {markers.map((item) => (
@@ -123,7 +123,7 @@ export function HomePage() {
           <SectionIntro
             eyebrow="Colecoes"
             title="Escolha por clima, energia e rotina"
-            description="As estacoes aparecem como cenas de campanha. O clique leva para o catalogo filtrado, mas a primeira leitura e visual."
+            description="As estacoes aparecem como cenas de campanha. O clique leva para o catálogo filtrado, mas a primeira leitura e visual."
           />
           <div className="grid gap-4 lg:grid-cols-4">
             {seasonLinks.map((season, index) => (
@@ -132,10 +132,10 @@ export function HomePage() {
                 to={`/produtos/estacao/${season.slug}`}
                 className={`group image-finish relative min-h-[520px] overflow-hidden rounded-lg bg-theme-hero text-white shadow-[0_24px_70px_rgba(25,27,24,0.16)] ${index === 1 ? "lg:translate-y-10" : ""} ${index === 2 ? "lg:-translate-y-6" : ""}`}
               >
-                <img src={season.image} alt={`Colecao ${season.label}`} className="absolute inset-0 h-full w-full object-cover opacity-82 transition duration-700 group-hover:scale-105 group-hover:opacity-95" />
+                <img src={season.image} alt={`Coleção ${season.label}`} className="absolute inset-0 h-full w-full object-cover opacity-82 transition duration-700 group-hover:scale-105 group-hover:opacity-95" />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,9,0.05)_0%,rgba(8,10,9,0.84)_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 z-[2] p-6">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/62">Colecao</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/62">Coleção</p>
                   <h3 className="mt-2 font-display text-4xl text-white">{season.label}</h3>
                   <p className="mt-3 text-sm leading-6 text-white/78">{season.tone}</p>
                 </div>
@@ -153,7 +153,7 @@ export function HomePage() {
             <div className="absolute inset-x-0 bottom-0 z-[2] p-7 sm:p-9">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/62">Check-in Fitness</p>
               <h2 className="mt-3 max-w-2xl font-display text-5xl leading-tight text-white sm:text-6xl">
-                O treino tambem faz parte da experiencia de compra.
+                O treino tambem faz parte da experiência de compra.
               </h2>
             </div>
           </div>
@@ -164,11 +164,11 @@ export function HomePage() {
               Pontos, cupons e constancia sem transformar a Home em dashboard.
             </h2>
             <p className="text-lg leading-8 text-theme-secondary">
-              A Home mostra o conceito; as telas internas cuidam da operacao. Assim a primeira impressao fica leve, visual e aspiracional.
+              A Home mostra o conceito; as telas internas cuidam da operação. Assim a primeira impressao fica leve, visual e aspiracional.
             </p>
             <div className="space-y-4 border-l border-theme pl-5">
               {[
-                ["01", "Primeira compra libera a area fitness"],
+                ["01", "Primeira compra libera a área fitness"],
                 ["02", "Check-ins registram frequencia"],
                 ["03", "Pontos viram cupons para recompra"]
               ].map(([number, text]) => (
@@ -190,9 +190,9 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl">
           <SectionIntro
             eyebrow="Mais vistos"
-            title="Produtos aparecem como campanha, nao como prateleira"
-            description="A prateleira completa continua no catalogo. Aqui, os destaques entram como imagens grandes para manter a Home limpa."
-            action={<Link to="/produtos" className="button-secondary">Ver catalogo</Link>}
+            title="Produtos aparecem como campanha, não como prateleira"
+            description="A prateleira completa continua no catálogo. Aqui, os destaques entram como imagens grandes para manter a Home limpa."
+            action={<Link to="/produtos" className="button-secondary">Ver catálogo</Link>}
           />
           <div className="grid gap-5 lg:grid-cols-3">
             {featuredProducts.map((product, index) => (

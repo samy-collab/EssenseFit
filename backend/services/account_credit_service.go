@@ -45,7 +45,7 @@ func (s *AccountCreditService) TopUp(userID uint, input TopUpAccountCreditInput)
 			Type:          "credit",
 			Amount:        input.Amount,
 			PaymentMethod: input.PaymentMethod,
-			Description:   fmt.Sprintf("Credito adicionado via %s", input.PaymentMethod),
+			Description:   fmt.Sprintf("Crédito adicionado via %s", input.PaymentMethod),
 		}
 		if err := tx.Create(&transaction).Error; err != nil {
 			return err

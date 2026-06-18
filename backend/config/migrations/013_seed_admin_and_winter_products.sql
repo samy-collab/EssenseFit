@@ -39,7 +39,7 @@ INSERT INTO products (
 (
     'Conjunto Termico Azul Inverno',
     'conjunto-termico-azul-inverno',
-    'Conjunto fitness de inverno com jaqueta, top e legging em tons frios. Inspirado na colecao Inverno do PDF Essence Fit.',
+    'Conjunto fitness de inverno com jaqueta, top e legging em tons frios. Inspirado na coleção Inverno do PDF Essence Fit.',
     'fitness-feminino',
     'inverno',
     'tecido termico',

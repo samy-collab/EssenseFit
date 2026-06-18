@@ -6,6 +6,7 @@ export async function createOrder(payload: {
   payment_method: string;
   shipping_address: string;
   notes: string;
+  user_coupon_id?: number;
   items: Array<{ product_id: number; quantity: number }>;
 }) {
   const { data } = await api.post<Order>("/orders", payload);

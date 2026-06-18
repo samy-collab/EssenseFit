@@ -17,13 +17,14 @@ export function CouponsPage() {
           <article key={entry.id} className="rounded-[26px] border border-espresso/10 bg-white/75 p-6">
             <p className="pill">{entry.coupon.code}</p>
             <h3 className="mt-4 font-display text-3xl text-espresso">{entry.coupon.title}</h3>
-            <p className="mt-3 text-sm text-espresso/70">Resgate: {entry.coupon.points_required} pontos</p>
-            <p className="mt-2 text-sm text-espresso/70">Valido ate {entry.coupon.expires_at}</p>
+            <p className="mt-3 text-sm text-espresso/70">{entry.coupon.points_required === 0 ? "Recompensa automática de check-in" : `Resgate: ${entry.coupon.points_required} pontos`}</p>
+            <p className="mt-2 text-sm text-espresso/70">Desconto: {entry.coupon.discount_value}%</p>
+            <p className="mt-2 text-sm text-espresso/70">Valido até {entry.coupon.expires_at ? new Date(entry.coupon.expires_at).toLocaleDateString("pt-BR") : "sem vencimento"}</p>
             <div className="mt-6 flex items-center justify-between">
               <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
                 entry.status === "used" ? "bg-espresso/10 text-espresso" : "bg-clay text-white"
               }`}>
-                {entry.status === "used" ? "Usado" : "Nao usado"}
+                {entry.status === "used" ? "Usado" : "Não usado"}
               </span>
             </div>
           </article>

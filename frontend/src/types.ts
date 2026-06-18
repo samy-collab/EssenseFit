@@ -78,6 +78,8 @@ export type Order = {
 export type CheckIn = {
   id: number;
   activity_type: string;
+  duration_min: number;
+  calories_burned: number;
   description: string;
   date: string;
   points_earned: number;
@@ -88,6 +90,9 @@ export type Coupon = {
   id: number;
   code: string;
   title: string;
+  description?: string;
+  discount_type?: "percentage" | "fixed";
+  discount_value: number;
   points_required: number;
   status?: "unused" | "used";
   expires_at?: string;

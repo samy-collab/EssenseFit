@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { topUpAccountCredit } from "../services/accountCreditService";
+import { fetchMyCoupons } from "../services/couponService";
 import { createOrder } from "../services/orderService";
 
 
@@ -63,6 +64,20 @@ function buildPixPayload(amount: number) {
   return `${payloadWithoutCrc}${crc16(payloadWithoutCrc)}`;
 }
 
+type CartCoupon = {
+  discount_type?: "percentage" | "fixed";
+  discount_value: number;
+};
+
+function calculateCouponDiscount(subtotal: number, coupon: CartCoupon) {
+  const discount = coupon.discount_type === "fixed" ? coupon.discount_value : subtotal * coupon.discount_value / 100;
+  return Math.min(Math.max(discount, 0), subtotal);
+}
+
+function formatCouponDiscount(coupon: CartCoupon) {
+  return coupon.discount_type === "fixed" ? `R$ ${coupon.discount_value.toFixed(2)}` : `${coupon.discount_value}%`;
+}
+
 export function CartPage() {
   const { items, total, itemCount, updateQuantity, removeItem, clearCart } = useCart();
   const { user, isAuthenticated, refreshProfile } = useAuth();
@@ -77,6 +92,8 @@ export function CartPage() {
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressError, setAddressError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [userCoupons, setUserCoupons] = useState<Array<{ id: number; status: "unused" | "used"; coupon: { code: string; title: string; discount_type?: "percentage" | "fixed"; discount_value: number; min_order_amount?: number } }>>([]);
+  const [selectedUserCouponID, setSelectedUserCouponID] = useState("");
   const [creditAmount, setCreditAmount] = useState("");
   const [creditPaymentMethod, setCreditPaymentMethod] = useState("pix");
   const [creditLoading, setCreditLoading] = useState(false);
@@ -88,12 +105,28 @@ export function CartPage() {
 
   const cepDigits = cep.replace(/\D/g, "");
   const accountCredit = user?.account_credit ?? 0;
+  const availableUserCoupons = userCoupons.filter((entry) => entry.status === "unused");
+  const selectedUserCoupon = availableUserCoupons.find((entry) => String(entry.id) === selectedUserCouponID);
+  const discountAmount = selectedUserCoupon ? calculateCouponDiscount(total, selectedUserCoupon.coupon) : 0;
+  const payableTotal = Math.max(total - discountAmount, 0);
+  const isAdmin = user?.role === "ADMIN";
+  const accountCreditLabel = isAdmin ? "Ilimitado" : `R$ ${accountCredit.toFixed(2)}`;
   const creditAmountValue = Number(creditAmount.replace(",", ".")) || 0;
-  const creditMissingAmount = Math.max(total - accountCredit, 0);
-  const pixPayload = useMemo(() => buildPixPayload(total), [total]);
+  const creditMissingAmount = isAdmin ? 0 : Math.max(payableTotal - accountCredit, 0);
+  const pixPayload = useMemo(() => buildPixPayload(payableTotal), [payableTotal]);
   const creditPixPayload = useMemo(() => buildPixPayload(Math.max(creditAmountValue, 0.01)), [creditAmountValue]);
   const pixQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayload)}`;
   const creditPixQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(creditPixPayload)}`;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUserCoupons([]);
+      setSelectedUserCouponID("");
+      return;
+    }
+
+    fetchMyCoupons().then(setUserCoupons).catch(() => setUserCoupons([]));
+  }, [isAuthenticated]);
 
   const shippingAddress = useMemo(() => {
     const parts = [
@@ -131,7 +164,7 @@ export function CartPage() {
         if (cancelled) return;
 
         if (data.erro) {
-          setAddressError("CEP nao encontrado. Preencha o endereco manualmente.");
+          setAddressError("CEP não encontrado. Preencha o endereço manualmente.");
           return;
         }
 
@@ -140,7 +173,7 @@ export function CartPage() {
         setCity(data.localidade ?? "");
         setStateUf(data.uf ?? "");
       } catch {
-        if (!cancelled) setAddressError("Nao foi possivel buscar o CEP. Preencha manualmente.");
+        if (!cancelled) setAddressError("Não foi possível buscar o CEP. Preencha manualmente.");
       } finally {
         if (!cancelled) setAddressLoading(false);
       }
@@ -156,9 +189,9 @@ export function CartPage() {
   async function handleCopyPix() {
     try {
       await navigator.clipboard.writeText(pixPayload);
-      setCopyStatus("Codigo Pix copiado.");
+      setCopyStatus("Código Pix copiado.");
     } catch {
-      setCopyStatus("Nao foi possivel copiar automaticamente.");
+      setCopyStatus("Não foi possível copiar automaticamente.");
     }
   }
 
@@ -169,7 +202,7 @@ export function CartPage() {
     }
 
     if (creditAmountValue <= 0) {
-      setCreditStatus("Informe um valor para adicionar credito.");
+      setCreditStatus("Informe um valor para adicionar crédito.");
       return;
     }
 
@@ -179,9 +212,9 @@ export function CartPage() {
       await topUpAccountCredit({ amount: creditAmountValue, payment_method: creditPaymentMethod });
       await refreshProfile();
       setCreditAmount("");
-      setCreditStatus("Credito adicionado a sua conta.");
+      setCreditStatus("Crédito adicionado à sua conta.");
     } catch {
-      setCreditStatus("Nao foi possivel adicionar credito agora.");
+      setCreditStatus("Não foi possível adicionar crédito agora.");
     } finally {
       setCreditLoading(false);
     }
@@ -198,13 +231,13 @@ export function CartPage() {
       return;
     }
 
-    if (paymentMethod === "account_credit" && accountCredit < total) {
-      setError("Seu credito na conta ainda nao cobre o total. Adicione credito para finalizar.");
+    if (paymentMethod === "account_credit" && !isAdmin && accountCredit < payableTotal) {
+      setError("Seu crédito na conta ainda não cobre o total. Adicione crédito para finalizar.");
       return;
     }
 
     if (!cepDigits || !street || !number || !neighborhood || !city || !stateUf) {
-      setError("Preencha CEP, rua, numero, bairro, cidade e UF para finalizar.");
+      setError("Preencha CEP, rua, número, bairro, cidade e UF para finalizar.");
       return;
     }
 
@@ -216,6 +249,7 @@ export function CartPage() {
         payment_method: paymentMethod,
         shipping_address: shippingAddress,
         notes,
+        user_coupon_id: selectedUserCoupon ? selectedUserCoupon.id : undefined,
         items: items.map((item) => ({
           product_id: item.product.id,
           quantity: item.quantity
@@ -225,7 +259,7 @@ export function CartPage() {
       await refreshProfile();
       navigate("/meus-pedidos");
     } catch {
-      setError("Nao foi possivel criar o pedido.");
+      setError("Não foi possível criar o pedido.");
     } finally {
       setLoading(false);
     }
@@ -241,8 +275,8 @@ export function CartPage() {
           <div className="relative flex min-h-[560px] items-end p-6 sm:p-10 lg:p-12">
             <div className="max-w-2xl pb-4">
               <p className="inline-flex rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur">Sacola vazia</p>
-              <h2 className="mt-5 font-display text-5xl leading-tight text-white sm:text-6xl lg:text-7xl">Ops, seu carrinho ainda esta vazio.</h2>
-              <p className="mt-5 max-w-xl text-lg leading-8 text-white/76">Explore a colecao e escolha as pecas que combinam com seu treino.</p>
+              <h2 className="mt-5 font-display text-5xl leading-tight text-white sm:text-6xl lg:text-7xl">Ops, seu carrinho ainda está vazio.</h2>
+              <p className="mt-5 max-w-xl text-lg leading-8 text-white/76">Explore a coleção e escolha as peças que combinam com seu treino.</p>
               <Link to="/produtos" className="button-primary mt-8 bg-white px-6 py-3 text-theme-inverse hover:bg-theme-accent hover:text-white">Ver produtos</Link>
             </div>
           </div>
@@ -260,7 +294,7 @@ export function CartPage() {
           <div className="max-w-3xl">
             <p className="inline-flex rounded-full border border-white/25 bg-white/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur">Checkout Essence Fit</p>
             <h2 className="mt-4 font-display text-5xl leading-tight text-white sm:text-6xl">Sua compra com visual de vitrine.</h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-white/74">Revise as pecas, confirme a entrega e pague por Pix em uma experiencia mais limpa, escura e editorial.</p>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/74">Revise as peças, confirme a entrega e pague por Pix em uma experiência mais limpa, escura e editorial.</p>
           </div>
           <div className="rounded-lg border border-white/18 bg-white/10 p-4 backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-white/15 pb-3 text-sm text-white/72">
@@ -269,7 +303,7 @@ export function CartPage() {
             </div>
             <div className="flex items-center justify-between pt-3 text-sm text-white/72">
               <span>Total agora</span>
-              <strong className="text-2xl text-white">R$ {total.toFixed(2)}</strong>
+              <strong className="text-2xl text-white">R$ {payableTotal.toFixed(2)}</strong>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[0.68rem] font-black uppercase tracking-[0.12em] text-white/72">
               <span className="rounded-md bg-white/12 px-2 py-2">Sacola</span>
@@ -305,7 +339,7 @@ export function CartPage() {
                   <Link to={`/produtos/${item.product.id}`} className="mt-3 block font-display text-3xl leading-tight text-theme-primary transition hover:text-theme-accent">
                     {item.product.name}
                   </Link>
-                  <p className="mt-2 text-sm text-theme-secondary">Peca adicionada a sua sacola. Ajuste a quantidade antes de finalizar.</p>
+                  <p className="mt-2 text-sm text-theme-secondary">Peça adicionada à sua sacola. Ajuste a quantidade antes de finalizar.</p>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <div className="flex w-fit items-center rounded-full border border-theme bg-theme-card p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                       <button type="button" className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold text-theme-primary transition hover:bg-theme-accent hover:text-white" onClick={() => updateQuantity(item.product.id, item.quantity - 1)} aria-label="Diminuir quantidade">-</button>
@@ -334,13 +368,30 @@ export function CartPage() {
               <div className="relative">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/72">Resumo</p>
                 <h3 className="mt-2 font-display text-3xl text-white">Pedido</h3>
-                <p className="mt-2 text-sm leading-6 text-white/70">Frete gratis em compras acima de R$ 299.</p>
+                <p className="mt-2 text-sm leading-6 text-white/70">Frete grátis em compras acima de R$ 299.</p>
               </div>
             </div>
             <div className="space-y-4 p-5 text-sm text-theme-secondary">
               <div className="flex justify-between border-b border-theme pb-3"><span>Subtotal</span><span>R$ {total.toFixed(2)}</span></div>
-              <div className="flex justify-between border-b border-theme pb-3"><span>Frete</span><span>{total >= 299 ? "Gratis" : "Gratis acima de R$ 299"}</span></div>
-              <div className="flex justify-between text-xl font-black text-theme-primary"><span>Total</span><span>R$ {total.toFixed(2)}</span></div>
+              <div className="flex justify-between border-b border-theme pb-3"><span>Frete</span><span>{total >= 299 ? "Grátis" : "Grátis acima de R$ 299"}</span></div>
+              {discountAmount > 0 ? <div className="flex justify-between border-b border-theme pb-3 text-theme-accent"><span>Cupom</span><span>- R$ {discountAmount.toFixed(2)}</span></div> : null}
+              <div className="flex justify-between text-xl font-black text-theme-primary"><span>Total</span><span>R$ {payableTotal.toFixed(2)}</span></div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-theme bg-theme-card p-5 shadow-[0_20px_60px_var(--shadow-soft)]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-theme-accent">Cupons</p>
+            <div className="mt-4 space-y-3">
+              <select className="w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" value={selectedUserCouponID} onChange={(event) => setSelectedUserCouponID(event.target.value)}>
+                <option value="">Sem cupom</option>
+                {availableUserCoupons.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.coupon.code} - {formatCouponDiscount(entry.coupon)}
+                  </option>
+                ))}
+              </select>
+              {selectedUserCoupon ? <p className="rounded-md border border-theme bg-theme-muted p-3 text-sm font-bold text-theme-accent">{selectedUserCoupon.coupon.title}: desconto de R$ {discountAmount.toFixed(2)} aplicado.</p> : null}
+              {isAuthenticated && availableUserCoupons.length === 0 ? <p className="text-sm text-theme-secondary">Nenhum cupom disponível nesta conta.</p> : null}
             </div>
           </div>
 
@@ -350,7 +401,7 @@ export function CartPage() {
               <div>
                 <label className="text-xs font-bold uppercase tracking-[0.14em] text-theme-muted" htmlFor="cep">CEP</label>
                 <input id="cep" className="mt-2 w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" placeholder="00000-000" inputMode="numeric" maxLength={9} value={cep} onChange={(event) => setCep(event.target.value.replace(/\D/g, "").replace(/(\d{5})(\d{0,3})/, (_match, first, second) => second ? `${first}-${second}` : first))} />
-                {addressLoading ? <p className="mt-2 text-xs font-bold text-theme-accent">Buscando endereco...</p> : null}
+                {addressLoading ? <p className="mt-2 text-xs font-bold text-theme-accent">Buscando endereço...</p> : null}
                 {addressError ? <p className="mt-2 text-xs font-bold text-red-400">{addressError}</p> : null}
               </div>
               <div>
@@ -359,7 +410,7 @@ export function CartPage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-[0.7fr_1fr]">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-[0.14em] text-theme-muted" htmlFor="number">Numero</label>
+                  <label className="text-xs font-bold uppercase tracking-[0.14em] text-theme-muted" htmlFor="number">Número</label>
                   <input id="number" className="mt-2 w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" placeholder="123" value={number} onChange={(event) => setNumber(event.target.value)} />
                 </div>
                 <div>
@@ -390,8 +441,8 @@ export function CartPage() {
             <div className="mt-5 space-y-4">
               <select className="w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}>
                 <option value="pix">PIX</option>
-                <option value="account_credit">Credito na conta</option>
-                <option value="cartao">Cartao</option>
+                <option value="account_credit">Crédito na conta</option>
+                <option value="cartao">Cartão</option>
                 <option value="boleto">Boleto</option>
               </select>
               {paymentMethod === "pix" ? (
@@ -401,8 +452,8 @@ export function CartPage() {
                     <div className="min-w-0">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-theme-accent">Pix copia e cola</p>
                       <p className="mt-2 text-sm leading-6 text-theme-secondary">{PIX_RECEIVER.name}</p>
-                      <p className="text-sm leading-6 text-theme-secondary">R$ {total.toFixed(2)}</p>
-                      <button type="button" className="button-secondary mt-3 w-full px-4 py-2 hover:border-theme-accent hover:text-theme-accent" onClick={handleCopyPix}>Copiar codigo Pix</button>
+                      <p className="text-sm leading-6 text-theme-secondary">R$ {payableTotal.toFixed(2)}</p>
+                      <button type="button" className="button-secondary mt-3 w-full px-4 py-2 hover:border-theme-accent hover:text-theme-accent" onClick={handleCopyPix}>Copiar código Pix</button>
                       {copyStatus ? <p className="mt-2 text-xs font-bold text-theme-accent">{copyStatus}</p> : null}
                     </div>
                   </div>
@@ -413,16 +464,18 @@ export function CartPage() {
                 <div className="rounded-lg border border-theme bg-theme-muted p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <div className="flex items-start justify-between gap-4 border-b border-theme pb-4">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-theme-accent">Credito na conta</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-theme-accent">Crédito na conta</p>
                       <p className="mt-2 text-sm leading-6 text-theme-secondary">Use o saldo da sua conta para finalizar a compra.</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-theme-muted">Saldo</p>
-                      <p className="text-xl font-black text-theme-primary">R$ {accountCredit.toFixed(2)}</p>
+                      <p className="text-xl font-black text-theme-primary">{accountCreditLabel}</p>
                     </div>
                   </div>
-                  {creditMissingAmount > 0 ? (
-                    <p className="mt-4 rounded-md border border-theme bg-theme-card p-3 text-sm font-bold text-theme-secondary">Faltam R$ {creditMissingAmount.toFixed(2)} para pagar este pedido com credito.</p>
+                  {isAdmin ? (
+                    <p className="mt-4 rounded-md border border-theme bg-theme-card p-3 text-sm font-bold text-theme-accent">Crédito administrativo ilimitado para finalizar pedidos.</p>
+                  ) : creditMissingAmount > 0 ? (
+                    <p className="mt-4 rounded-md border border-theme bg-theme-card p-3 text-sm font-bold text-theme-secondary">Faltam R$ {creditMissingAmount.toFixed(2)} para pagar este pedido com crédito.</p>
                   ) : (
                     <p className="mt-4 rounded-md border border-theme bg-theme-card p-3 text-sm font-bold text-theme-accent">Seu saldo cobre o total deste pedido.</p>
                   )}
@@ -430,23 +483,23 @@ export function CartPage() {
                     <input className="w-full rounded-md border border-theme bg-theme-card px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" placeholder="Valor para adicionar" inputMode="decimal" value={creditAmount} onChange={(event) => setCreditAmount(event.target.value.replace(/[^0-9,.]/g, ""))} />
                     <select className="w-full rounded-md border border-theme bg-theme-card px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" value={creditPaymentMethod} onChange={(event) => setCreditPaymentMethod(event.target.value)}>
                       <option value="pix">Adicionar via Pix</option>
-                      <option value="cartao">Adicionar via cartao</option>
+                      <option value="cartao">Adicionar via cartão</option>
                       <option value="boleto">Adicionar via boleto</option>
                     </select>
                   </div>
                   {creditPaymentMethod === "pix" && creditAmountValue > 0 ? (
                     <div className="mt-4 grid gap-3 rounded-md border border-theme bg-theme-card p-3 sm:grid-cols-[104px_1fr] sm:items-center">
-                      <img src={creditPixQrCodeUrl} alt="QR Code Pix para adicionar credito" className="h-24 w-24 rounded-md bg-white p-2" />
-                      <p className="text-xs leading-5 text-theme-secondary">QR Code para adicionar R$ {creditAmountValue.toFixed(2)} de credito via Pix.</p>
+                      <img src={creditPixQrCodeUrl} alt="QR Code Pix para adicionar crédito" className="h-24 w-24 rounded-md bg-white p-2" />
+                      <p className="text-xs leading-5 text-theme-secondary">QR Code para adicionar R$ {creditAmountValue.toFixed(2)} de crédito via Pix.</p>
                     </div>
                   ) : null}
-                  <button type="button" className="button-secondary mt-4 w-full px-4 py-2 hover:border-theme-accent hover:text-theme-accent" onClick={handleTopUpCredit} disabled={creditLoading}>{creditLoading ? "Adicionando credito..." : "Adicionar credito"}</button>
+                  <button type="button" className="button-secondary mt-4 w-full px-4 py-2 hover:border-theme-accent hover:text-theme-accent" onClick={handleTopUpCredit} disabled={creditLoading}>{creditLoading ? "Adicionando crédito..." : "Adicionar crédito"}</button>
                   {creditStatus ? <p className="mt-3 text-xs font-bold text-theme-accent">{creditStatus}</p> : null}
                 </div>
               ) : null}
-              <textarea className="w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" placeholder="Observacoes" value={notes} onChange={(event) => setNotes(event.target.value)} />
+              <textarea className="w-full rounded-md border border-theme bg-theme-muted px-4 py-3 transition focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent/20" placeholder="Observações" value={notes} onChange={(event) => setNotes(event.target.value)} />
               {error ? <p className="text-sm font-bold text-red-400">{error}</p> : null}
-              {!isAuthenticated ? <p className="text-sm leading-6 text-theme-muted">Para finalizar, voce sera direcionado ao login. O carrinho fica salvo.</p> : null}
+              {!isAuthenticated ? <p className="text-sm leading-6 text-theme-muted">Para finalizar, você será direcionado ao login. O carrinho fica salvo.</p> : null}
               <button className="button-primary w-full shadow-[0_18px_44px_rgba(203,111,84,0.26)] hover:-translate-y-0.5" type="button" onClick={handleCreateOrder} disabled={loading}>{loading ? "Criando pedido..." : isAuthenticated ? "Finalizar compra" : "Entrar para finalizar"}</button>
               <button className="button-secondary w-full hover:border-theme-accent hover:text-theme-accent" type="button" onClick={clearCart}>Limpar carrinho</button>
             </div>

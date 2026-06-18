@@ -19,7 +19,7 @@ export function RegisterPage() {
       await register(name, email, password);
       navigate("/produtos");
     } catch {
-      setError("Nao foi possivel concluir o cadastro.");
+      setError("Não foi possível concluir o cadastro.");
     } finally {
       setLoading(false);
     }

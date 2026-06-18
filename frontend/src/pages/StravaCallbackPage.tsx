@@ -13,13 +13,13 @@ export function StravaCallbackPage() {
     const errorCode = callbackParams.get("error");
 
     if (errorCode || !token) {
-      setError("Nao foi possivel entrar com Strava. Tente novamente.");
+      setError("Não foi possível entrar com Strava. Tente novamente.");
       return;
     }
 
     loginWithToken(token)
       .then(() => navigate("/produtos", { replace: true }))
-      .catch(() => setError("Nao foi possivel validar sua sessao Strava."));
+      .catch(() => setError("Não foi possível validar sua sessão Strava."));
   }, [loginWithToken, navigate]);
 
   return (

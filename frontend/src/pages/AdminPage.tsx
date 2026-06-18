@@ -22,7 +22,7 @@ const emptyForm: ProductPayload = {
 };
 
 const pdfImageOptions = [
-  { label: "Colecao inverno", value: "/brand/pdf-assets/asset-028.png" },
+  { label: "Coleção inverno", value: "/brand/pdf-assets/asset-028.png" },
   { label: "Campanha preta", value: "/brand/pdf-assets/asset-004.png" },
   { label: "Top coral", value: "/brand/pdf-assets/asset-005.png" },
   { label: "Conjunto coral", value: "/brand/pdf-assets/asset-006.png" },
@@ -106,27 +106,27 @@ export function AdminPage() {
       resetForm();
       await loadProducts();
     } catch {
-      setError("Nao foi possivel salvar. Confira os campos e tente novamente.");
+      setError("Não foi possível salvar. Confira os campos e tente novamente.");
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(product: Product) {
-    const confirmed = window.confirm(`Remover ${product.name} do catalogo?`);
+    const confirmed = window.confirm(`Remover ${product.name} do catálogo?`);
     if (!confirmed) {
       return;
     }
 
     try {
       await deleteProduct(product.id);
-      setMessage("Produto removido do catalogo.");
+      setMessage("Produto removido do catálogo.");
       await loadProducts();
       if (editingProductId === product.id) {
         resetForm();
       }
     } catch {
-      setError("Nao foi possivel remover o produto.");
+      setError("Não foi possível remover o produto.");
     }
   }
 
@@ -144,7 +144,7 @@ export function AdminPage() {
       updateField("image", imageUrl);
       setMessage("Imagem enviada com sucesso. Salve o produto para aplicar.");
     } catch {
-      setError("Nao foi possivel enviar a imagem. Use PNG, JPG, WEBP ou GIF ate 5MB.");
+      setError("Não foi possível enviar a imagem. Use PNG, JPG, WEBP ou GIF até 5MB.");
     } finally {
       setUploading(false);
     }
@@ -162,10 +162,10 @@ export function AdminPage() {
         </div>
         <div className="card bg-[linear-gradient(135deg,#3e2a23_0%,#6a493e_60%,#c58f68_120%)] text-white">
           <p className="text-sm uppercase tracking-[0.2em] text-white/70">Painel Admin</p>
-          <h2 className="mt-4 font-display text-5xl">Controle da operacao Essence Fit</h2>
+          <h2 className="mt-4 font-display text-5xl">Controle da operação Essence Fit</h2>
           <p className="mt-4 max-w-2xl text-white/75">
             Cadastre produtos, escolha imagens extraidas do PDF da marca e mantenha a
-            vitrine alinhada com a colecao de inverno.
+            vitrine alinhada com a coleção de inverno.
           </p>
         </div>
       </div>
@@ -176,7 +176,7 @@ export function AdminPage() {
           <p className="mt-4 font-display text-5xl">{loading ? "..." : activeProducts}</p>
         </div>
         <div className="card">
-          <p className="text-sm text-clay">Colecao do PDF</p>
+          <p className="text-sm text-clay">Coleção do PDF</p>
           <p className="mt-4 font-display text-5xl">Inverno</p>
         </div>
         <div className="card">
@@ -311,7 +311,7 @@ export function AdminPage() {
               onChange={(event) => handleImageUpload(event.target.files?.[0])}
             />
             <span className="mt-2 block text-xs font-normal text-espresso/60">
-              {uploading ? "Enviando imagem..." : "PNG, JPG, WEBP ou GIF ate 5MB."}
+              {uploading ? "Enviando imagem..." : "PNG, JPG, WEBP ou GIF até 5MB."}
             </span>
           </label>
 
@@ -326,7 +326,7 @@ export function AdminPage() {
           </label>
 
           <div className="overflow-hidden rounded-[24px] border border-espresso/10 bg-white">
-            <img src={form.image} alt="Previa do produto" className="h-72 w-full object-cover" />
+            <img src={form.image} alt="Prévia do produto" className="h-72 w-full object-cover" />
           </div>
 
           {message ? <p className="text-sm font-semibold text-green-700">{message}</p> : null}
@@ -340,7 +340,7 @@ export function AdminPage() {
         <div className="card">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="pill">Catalogo</p>
+              <p className="pill">Catálogo</p>
               <h3 className="mt-4 font-display text-3xl text-espresso">Produtos no site</h3>
             </div>
             <button className="button-secondary" type="button" onClick={loadProducts}>

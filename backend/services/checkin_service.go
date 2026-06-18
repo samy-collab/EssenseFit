@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"essensefit/backend/models"
@@ -17,10 +18,12 @@ type CheckInService struct {
 }
 
 type CreateCheckInInput struct {
-	ActivityType string `json:"activity_type" binding:"required,oneof=caminhada corrida academia pilates dança ciclismo funcional outro"`
-	Description  string `json:"description" binding:"required"`
-	Date         string `json:"date" binding:"required"`
-	ImageURL     string `json:"image"`
+	ActivityType   string `json:"activity_type" binding:"required,oneof=caminhada corrida academia pilates dança ciclismo funcional outro"`
+	DurationMin    int    `json:"duration_min" binding:"required,min=1"`
+	CaloriesBurned int    `json:"calories_burned" binding:"omitempty,min=0"`
+	Description    string `json:"description" binding:"required"`
+	Date           string `json:"date" binding:"required"`
+	ImageURL       string `json:"image"`
 }
 
 func NewCheckInService(
@@ -43,8 +46,8 @@ func (s *CheckInService) Create(userID uint, input CreateCheckInInput) (*models.
 		return nil, err
 	}
 
-	if !user.HasFirstPurchase {
-		return nil, errors.New("check-in area is locked until the first confirmed purchase")
+	if !user.CheckInUnlocked {
+		return nil, errors.New("check-in area is locked until the first purchase")
 	}
 
 	checkInDate, err := time.Parse("2006-01-02", input.Date)
@@ -61,13 +64,15 @@ func (s *CheckInService) Create(userID uint, input CreateCheckInInput) (*models.
 	}
 
 	checkIn := &models.CheckIn{
-		UserID:       userID,
-		ActivityType: input.ActivityType,
-		Description:  input.Description,
-		ImageURL:     input.ImageURL,
-		PointsEarned: 10,
-		CheckInDay:   checkInDate,
-		CheckInDate:  checkInDate,
+		UserID:         userID,
+		ActivityType:   input.ActivityType,
+		DurationMin:    input.DurationMin,
+		CaloriesBurned: input.CaloriesBurned,
+		Description:    input.Description,
+		ImageURL:       input.ImageURL,
+		PointsEarned:   10,
+		CheckInDay:     checkInDate,
+		CheckInDate:    checkInDate,
 	}
 
 	err = s.db.Transaction(func(tx *gorm.DB) error {
@@ -93,6 +98,94 @@ func (s *CheckInService) Create(userID uint, input CreateCheckInInput) (*models.
 	}
 
 	return checkIn, nil
+}
+
+func (s *CheckInService) currentStreak(tx *gorm.DB, userID uint, checkInDate time.Time) (int, error) {
+	var checkIns []models.CheckIn
+	if err := tx.Where("user_id = ? AND checkin_day <= ?", userID, checkInDate.Format("2006-01-02")).
+		Order("checkin_day desc").
+		Find(&checkIns).Error; err != nil {
+		return 0, err
+	}
+
+	streak := 0
+	expectedDay := dateOnly(checkInDate)
+	for _, checkIn := range checkIns {
+		day := dateOnly(checkIn.CheckInDay)
+		if day.Equal(expectedDay) {
+			streak++
+			expectedDay = expectedDay.AddDate(0, 0, -1)
+			continue
+		}
+		if day.Before(expectedDay) {
+			break
+		}
+	}
+
+	return streak, nil
+}
+
+func (s *CheckInService) awardStreakCoupon(tx *gorm.DB, userID uint, streak int, checkInDate time.Time) error {
+	reward, ok := checkInRewardForStreak(streak)
+	if !ok {
+		return nil
+	}
+
+	code := fmt.Sprintf("CHECKIN%d-U%d-%s", streak, userID, checkInDate.Format("20060102"))
+	expiresAt := time.Now().AddDate(0, 2, 0)
+	coupon := models.Coupon{
+		Code:           code,
+		Title:          reward.title,
+		Description:    reward.description,
+		DiscountType:   "percentage",
+		DiscountValue:  reward.discountValue,
+		PointsRequired: 0,
+		ExpiresAt:      &expiresAt,
+		IsActive:       true,
+	}
+
+	if err := tx.Where("code = ?", code).FirstOrCreate(&coupon).Error; err != nil {
+		return err
+	}
+
+	userCoupon := models.UserCoupon{
+		UserID:     userID,
+		CouponID:   coupon.ID,
+		Status:     "unused",
+		RedeemedAt: time.Now(),
+	}
+
+	return tx.Where("user_id = ? AND coupon_id = ?", userID, coupon.ID).FirstOrCreate(&userCoupon).Error
+}
+
+type checkInReward struct {
+	title         string
+	description   string
+	discountValue float64
+}
+
+func checkInRewardForStreak(streak int) (checkInReward, bool) {
+	switch streak {
+	case 7:
+		return checkInReward{
+			title:         "Sequência fitness de 7 dias",
+			description:   "Cupom conquistado por uma semana de check-ins diários.",
+			discountValue: 5,
+		}, true
+	case 30:
+		return checkInReward{
+			title:         "Sequência fitness de 30 dias",
+			description:   "Cupom conquistado por um mês de check-ins diários.",
+			discountValue: 15,
+		}, true
+	default:
+		return checkInReward{}, false
+	}
+}
+
+func dateOnly(value time.Time) time.Time {
+	year, month, day := value.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 }
 
 func (s *CheckInService) ListByUser(userID uint) ([]models.CheckIn, error) {

@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"essensefit/backend/models"
@@ -22,6 +23,7 @@ type CreateOrderInput struct {
 	PaymentMethod   string            `json:"payment_method"`
 	ShippingAddress string            `json:"shipping_address"`
 	Notes           string            `json:"notes"`
+	UserCouponID    *uint             `json:"user_coupon_id"`
 	Items           []CreateOrderItem `json:"items" binding:"required,min=1,dive"`
 }
 
@@ -100,10 +102,26 @@ func (s *OrderService) Create(userID uint, input CreateOrderInput) (*models.Orde
 		}
 
 		order.SubtotalAmount = subtotal
+		order.DiscountAmount = 0
 		order.TotalAmount = subtotal
 		order.Items = items
 
-		if input.PaymentMethod == "account_credit" {
+		var appliedUserCoupon *models.UserCoupon
+		if input.UserCouponID != nil {
+			userCoupon, discountAmount, err := s.applyCoupon(tx, userID, *input.UserCouponID, subtotal)
+			if err != nil {
+				return err
+			}
+
+			appliedUserCoupon = userCoupon
+			order.DiscountAmount = discountAmount
+			order.TotalAmount = subtotal - discountAmount
+			if order.TotalAmount < 0 {
+				order.TotalAmount = 0
+			}
+		}
+
+		if input.PaymentMethod == "account_credit" && !strings.EqualFold(user.Role, "ADMIN") {
 			if user.AccountCredit < order.TotalAmount {
 				return errors.New("insufficient account credit")
 			}
@@ -116,14 +134,28 @@ func (s *OrderService) Create(userID uint, input CreateOrderInput) (*models.Orde
 				Type:          "debit",
 				Amount:        order.TotalAmount,
 				PaymentMethod: "account_credit",
-				Description:   "Pagamento de pedido com credito na conta",
+				Description:   "Pagamento de pedido com crédito na conta",
 			}
 			if err := tx.Create(&transaction).Error; err != nil {
 				return err
 			}
 		}
 
-		return tx.Create(order).Error
+		if err := tx.Create(order).Error; err != nil {
+			return err
+		}
+
+		if appliedUserCoupon != nil {
+			now := time.Now()
+			appliedUserCoupon.Status = "used"
+			appliedUserCoupon.OrderID = &order.ID
+			appliedUserCoupon.UsedAt = &now
+			if err := tx.Save(appliedUserCoupon).Error; err != nil {
+				return err
+			}
+		}
+
+		return s.unlockCheckInForFirstPurchase(tx, userID)
 	})
 	if err != nil {
 		return nil, err
@@ -170,11 +202,9 @@ func (s *OrderService) UpdateStatus(orderID uint, input UpdateOrderStatusInput) 
 				return err
 			}
 
-			if !user.HasFirstPurchase {
-				user.HasFirstPurchase = true
-				user.CheckInUnlocked = true
-				user.ConfirmedOrders++
-			}
+			user.HasFirstPurchase = true
+			user.CheckInUnlocked = true
+			user.ConfirmedOrders++
 			return tx.Save(user).Error
 		}
 
@@ -185,6 +215,50 @@ func (s *OrderService) UpdateStatus(orderID uint, input UpdateOrderStatusInput) 
 	}
 
 	return order, nil
+}
+
+func (s *OrderService) applyCoupon(tx *gorm.DB, userID uint, userCouponID uint, subtotal float64) (*models.UserCoupon, float64, error) {
+	var userCoupon models.UserCoupon
+	if err := tx.Preload("Coupon").
+		Where("id = ? AND user_id = ?", userCouponID, userID).
+		First(&userCoupon).Error; err != nil {
+		return nil, 0, errors.New("coupon not found")
+	}
+
+	if userCoupon.Status != "unused" {
+		return nil, 0, errors.New("coupon already used")
+	}
+	if !userCoupon.Coupon.IsActive {
+		return nil, 0, errors.New("coupon is inactive")
+	}
+	if userCoupon.Coupon.ExpiresAt != nil && userCoupon.Coupon.ExpiresAt.Before(time.Now()) {
+		return nil, 0, errors.New("coupon has expired")
+	}
+	if userCoupon.Coupon.MinOrderAmount > subtotal {
+		return nil, 0, errors.New("order total is below coupon minimum")
+	}
+
+	discountAmount := userCoupon.Coupon.DiscountValue
+	if userCoupon.Coupon.DiscountType == "percentage" {
+		discountAmount = subtotal * userCoupon.Coupon.DiscountValue / 100
+	}
+	if discountAmount > subtotal {
+		discountAmount = subtotal
+	}
+	if discountAmount < 0 {
+		discountAmount = 0
+	}
+
+	return &userCoupon, discountAmount, nil
+}
+
+func (s *OrderService) unlockCheckInForFirstPurchase(tx *gorm.DB, userID uint) error {
+	return tx.Model(&models.User{}).
+		Where("id = ? AND check_in_unlocked = ?", userID, false).
+		Updates(map[string]any{
+			"has_first_purchase": true,
+			"check_in_unlocked":  true,
+		}).Error
 }
 
 func generateOrderNumber() string {

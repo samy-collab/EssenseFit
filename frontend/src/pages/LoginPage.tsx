@@ -38,7 +38,7 @@ export function LoginPage() {
       await login(email.trim(), password);
       navigate("/produtos");
     } catch (err) {
-      setError("Nao foi possivel entrar. Verifique e-mail e senha.");
+      setError("Não foi possível entrar. Verifique e-mail e senha.");
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export function LoginPage() {
     <section className="mx-auto max-w-xl card">
       <p className="pill">Acesso</p>
       <h2 className="section-title mt-4">Entrar na sua conta</h2>
-      <p className="mt-3 text-espresso/70">Acesse sua area de compras, check-ins, pontos e cupons.</p>
+      <p className="mt-3 text-espresso/70">Acesse sua área de compras, check-ins, pontos e cupons.</p>
       <div className="mt-8 space-y-3">
         <button className="w-full rounded-2xl bg-[#fc4c02] px-5 py-3 font-semibold text-white shadow-[0_12px_28px_rgba(252,76,2,0.28)] transition hover:bg-[#d84302]" type="button" onClick={handleStravaLogin}>
           Entrar com Strava

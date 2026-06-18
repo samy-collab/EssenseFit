@@ -135,7 +135,7 @@ export function ProductDetailPage() {
   }
 
   if (!product || !activeImage) {
-    return <div className="card">Produto nao encontrado.</div>;
+    return <div className="card">Produto não encontrado.</div>;
   }
 
   return (
@@ -210,7 +210,7 @@ export function ProductDetailPage() {
             Adicionar ao carrinho
           </button>
           <Link to="/produtos" className="button-secondary">
-            Voltar ao catalogo
+            Voltar ao catálogo
           </Link>
         </div>
       </div>

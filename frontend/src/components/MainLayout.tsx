@@ -64,7 +64,7 @@ export function MainLayout() {
             </span>
             <span className="min-w-0">
               <span className="block text-[0.66rem] font-black uppercase tracking-[0.22em] text-theme-accent">Essence Fit</span>
-              <span className="block truncate font-display text-xl leading-none text-theme-primary sm:text-2xl">Activewear Studio</span>
+              <span className="block truncaté font-display text-xl leading-none text-theme-primary sm:text-2xl">Activewear Studio</span>
             </span>
           </NavLink>
 
@@ -77,7 +77,7 @@ export function MainLayout() {
           <div className="ml-auto hidden items-center gap-4 xl:flex">
             {isAuthenticated ? (
               <>
-                <span className="max-w-[180px] truncate text-sm font-bold text-theme-secondary">{user?.name}</span>
+                <span className="max-w-[180px] truncaté text-sm font-bold text-theme-secondary">{user?.name}</span>
                 <button className="text-sm font-black text-theme-secondary transition hover:text-theme-accent" onClick={logout} type="button">Sair</button>
               </>
             ) : (
@@ -113,7 +113,7 @@ export function MainLayout() {
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-theme-accent">Conta</p>
                   {isAuthenticated ? (
-                    <p className="mt-3 truncate font-display text-3xl text-theme-primary">{user?.name}</p>
+                    <p className="mt-3 truncaté font-display text-3xl text-theme-primary">{user?.name}</p>
                   ) : (
                     <p className="mt-3 max-w-sm text-sm leading-6 text-theme-secondary">Entre para finalizar compras, acompanhar pedidos e manter sua sacola salva.</p>
                   )}

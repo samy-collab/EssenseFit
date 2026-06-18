@@ -21,12 +21,12 @@ export function PointsPage() {
           <p className="mt-4 font-display text-5xl">{data?.check_in_count ?? 0}</p>
         </div>
         <div className="card">
-          <p className="text-sm uppercase tracking-[0.2em] text-clay">Cupons disponiveis</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-clay">Cupons disponíveis</p>
           <p className="mt-4 font-display text-5xl">{data?.available_coupons.length ?? 0}</p>
         </div>
       </div>
       <div className="card">
-        <h2 className="section-title">Historico de pontos</h2>
+        <h2 className="section-title">Histórico de pontos</h2>
         <div className="mt-6 space-y-4">
           {data?.points_history.map((item) => (
             <div key={item.id} className="flex items-center justify-between rounded-[24px] border border-espresso/10 bg-white/70 p-5">
